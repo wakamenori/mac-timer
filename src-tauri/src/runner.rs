@@ -1,5 +1,6 @@
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager};
+use tauri::webview::WebviewWindowBuilder;
 use tokio::time::{interval, Duration};
 
 use crate::commands::{ActiveTimer, AppState, TimerSnapshot};
@@ -39,6 +40,7 @@ fn tick_once(app: &AppHandle) {
                         to: "finished".to_string(),
                     },
                 );
+                open_notification_window(app);
             }
         }
         ActiveTimer::Pomodoro(timer) => {
@@ -53,10 +55,35 @@ fn tick_once(app: &AppHandle) {
                         to: format!("{:?}", t.to),
                     },
                 );
+                open_notification_window(app);
             }
         }
     }
 
     drop(state);
     update_tray_title(app);
+}
+
+fn open_notification_window(app: &AppHandle) {
+    if let Some(win) = app.get_webview_window("notification") {
+        let _ = win.show();
+        let _ = win.set_focus();
+        return;
+    }
+
+    let url = tauri::WebviewUrl::App("notification.html".into());
+    let builder = WebviewWindowBuilder::new(app, "notification", url)
+        .title("Notification")
+        .inner_size(300.0, 120.0)
+        .decorations(false)
+        .transparent(true)
+        .always_on_top(true)
+        .skip_taskbar(true)
+        .center()
+        .resizable(false);
+
+    match builder.build() {
+        Ok(_) => {}
+        Err(e) => eprintln!("Failed to create notification window: {}", e),
+    }
 }

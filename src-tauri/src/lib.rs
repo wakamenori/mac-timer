@@ -21,6 +21,7 @@ pub fn run() {
             commands::switch_to_pomodoro,
             commands::get_snapshot,
             commands::toggle_always_on_top,
+            commands::dismiss_notification,
         ])
         .setup(|app| {
             // Hide from Dock by setting activation policy to Accessory

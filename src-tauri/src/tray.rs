@@ -13,7 +13,7 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
 
     TrayIconBuilder::with_id("main")
         .title("⏱ 25:00")
-        .tooltip("Mac Timer")
+        .tooltip("Timer")
         .menu(&menu)
         .on_menu_event(|app, event| {
             if event.id() == "quit" {

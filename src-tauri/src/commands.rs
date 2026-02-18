@@ -1,6 +1,6 @@
 use serde::Serialize;
 use std::sync::Mutex;
-use tauri::State;
+use tauri::{Manager, State};
 
 use crate::pomodoro::{PomodoroConfig, PomodoroTimer};
 use crate::timer::BasicTimer;
@@ -127,5 +127,12 @@ pub fn get_snapshot(state: State<'_, Mutex<AppState>>) -> TimerSnapshot {
 pub fn toggle_always_on_top(window: tauri::Window) {
     if let Ok(is_on_top) = window.is_always_on_top() {
         let _ = window.set_always_on_top(!is_on_top);
+    }
+}
+
+#[tauri::command]
+pub fn dismiss_notification(app: tauri::AppHandle) {
+    if let Some(win) = app.get_webview_window("notification") {
+        let _ = win.close();
     }
 }

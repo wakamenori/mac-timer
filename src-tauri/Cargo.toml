@@ -1,7 +1,7 @@
 [package]
 name = "mac-timer"
 version = "0.1.0"
-description = "A macOS menu bar timer app"
+description = "A menu bar timer app"
 authors = ["you"]
 edition = "2021"
 
