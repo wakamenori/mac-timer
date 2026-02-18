@@ -23,6 +23,9 @@ pub fn run() {
             commands::toggle_always_on_top,
         ])
         .setup(|app| {
+            // Hide from Dock by setting activation policy to Accessory
+            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+
             tray::setup_tray(app.handle())?;
             runner::start_tick_loop(app.handle().clone());
             Ok(())

@@ -14,6 +14,7 @@ export interface TimerSnapshot {
   mode: string;
   display: string;
   remaining_secs: number;
+  total_secs: number;
   is_running: boolean;
   is_finished: boolean;
   phase: string | null;
@@ -30,6 +31,34 @@ export interface TimerCallbacks {
   onClose: () => void;
 }
 
+const RING_RADIUS = 70;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+
+export function progressRingSvg(remaining: number, total: number): string {
+  const progress = total > 0 ? remaining / total : 0;
+  const offset = RING_CIRCUMFERENCE * (1 - progress);
+  return `
+    <svg class="progress-ring" width="160" height="160" viewBox="0 0 160 160">
+      <circle class="progress-ring-bg" cx="80" cy="80" r="${RING_RADIUS}"
+        fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4" />
+      <circle class="progress-ring-fill" cx="80" cy="80" r="${RING_RADIUS}"
+        fill="none" stroke="rgba(59,130,246,0.8)" stroke-width="4"
+        stroke-linecap="round"
+        stroke-dasharray="${RING_CIRCUMFERENCE}"
+        stroke-dashoffset="${offset}"
+        transform="rotate(-90 80 80)" />
+    </svg>`;
+}
+
+export function updateProgressRing(container: HTMLElement, remaining: number, total: number): void {
+  const fill = container.querySelector(".progress-ring-fill") as SVGCircleElement | null;
+  if (fill) {
+    const progress = total > 0 ? remaining / total : 0;
+    const offset = RING_CIRCUMFERENCE * (1 - progress);
+    fill.style.strokeDashoffset = String(offset);
+  }
+}
+
 let lastBasicIsRunning: boolean | null = null;
 
 export function renderBasicTimer(
@@ -41,6 +70,7 @@ export function renderBasicTimer(
   const existing = container.querySelector(".timer-display");
   if (existing && lastBasicIsRunning === snapshot.is_running) {
     existing.textContent = snapshot.display;
+    updateProgressRing(container, snapshot.remaining_secs, snapshot.total_secs);
     return;
   }
 
@@ -50,7 +80,18 @@ export function renderBasicTimer(
     <div class="timer-container">
       <button id="btn-close" class="btn-close" aria-label="Close">&times;</button>
       <div class="mode-label">Basic Timer</div>
-      <div class="timer-display">${snapshot.display}</div>
+      <div class="timer-ring-wrapper">
+        ${progressRingSvg(snapshot.remaining_secs, snapshot.total_secs)}
+        <div class="timer-ring-content">
+          <div class="timer-display">${snapshot.display}</div>
+        </div>
+      </div>
+      <div class="presets">
+        <button class="btn btn-preset" data-secs="300">5m</button>
+        <button class="btn btn-preset" data-secs="600">10m</button>
+        <button class="btn btn-preset" data-secs="900">15m</button>
+        <button class="btn btn-preset" data-secs="1800">30m</button>
+      </div>
       <div class="timer-controls">
         ${
           snapshot.is_running
@@ -58,12 +99,6 @@ export function renderBasicTimer(
             : `<button id="btn-start" class="btn btn-primary">Start</button>`
         }
         <button id="btn-reset" class="btn">Reset</button>
-      </div>
-      <div class="presets">
-        <button class="btn btn-preset" data-secs="300">5m</button>
-        <button class="btn btn-preset" data-secs="600">10m</button>
-        <button class="btn btn-preset" data-secs="900">15m</button>
-        <button class="btn btn-preset" data-secs="1800">30m</button>
       </div>
       <button id="btn-switch" class="btn btn-mode">Switch to Pomodoro</button>
     </div>

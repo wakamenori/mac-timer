@@ -85,11 +85,41 @@ body {
   font-weight: 500;
 }
 
+.timer-ring-wrapper {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.progress-ring-fill {
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.timer-ring-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
 .timer-display {
-  font-size: 64px;
+  font-size: 36px;
   font-weight: 200;
   font-variant-numeric: tabular-nums;
   letter-spacing: -2px;
+  line-height: 1;
 }
 
 .session-dots {
@@ -100,6 +130,7 @@ body {
 .timer-controls {
   display: flex;
   gap: 12px;
+  margin-top: auto;
 }
 
 .btn {

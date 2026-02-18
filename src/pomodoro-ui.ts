@@ -1,4 +1,5 @@
 import type { TimerCallbacks, TimerSnapshot } from "./timer-ui";
+import { updateProgressRing, progressRingSvg } from "./timer-ui";
 
 let lastPomodoroState: { isRunning: boolean; phase: string | null } | null =
   null;
@@ -17,6 +18,7 @@ export function renderPomodoroTimer(
     lastPomodoroState.phase === snapshot.phase
   ) {
     existing.textContent = snapshot.display;
+    updateProgressRing(container, snapshot.remaining_secs, snapshot.total_secs);
     const dots = container.querySelector(".session-dots");
     if (dots) dots.textContent = snapshot.session_display || "";
     return;
@@ -27,19 +29,16 @@ export function renderPomodoroTimer(
     phase: snapshot.phase,
   };
 
-  const phaseLabel =
-    snapshot.phase === "Work"
-      ? "🍅 Work"
-      : snapshot.phase === "ShortBreak"
-        ? "☕ Short Break"
-        : "☕ Long Break";
-
   container.innerHTML = `
     <div class="timer-container">
       <button id="btn-close" class="btn-close" aria-label="Close">&times;</button>
       <div class="mode-label">Pomodoro</div>
-      <div class="phase-label">${phaseLabel}</div>
-      <div class="timer-display">${snapshot.display}</div>
+      <div class="timer-ring-wrapper">
+        ${progressRingSvg(snapshot.remaining_secs, snapshot.total_secs)}
+        <div class="timer-ring-content">
+          <div class="timer-display">${snapshot.display}</div>
+        </div>
+      </div>
       <div class="session-dots">${snapshot.session_display || ""}</div>
       <div class="timer-controls">
         ${

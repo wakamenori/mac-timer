@@ -28,6 +28,10 @@ impl BasicTimer {
         self.remaining_secs
     }
 
+    pub fn duration_secs(&self) -> u32 {
+        self.duration_secs
+    }
+
     pub fn status(&self) -> TimerStatus {
         self.status
     }

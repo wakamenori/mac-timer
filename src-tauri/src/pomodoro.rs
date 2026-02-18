@@ -67,6 +67,14 @@ impl PomodoroTimer {
         self.remaining_secs
     }
 
+    pub fn phase_duration_secs(&self) -> u32 {
+        match self.phase {
+            Phase::Work => self.config.work_secs,
+            Phase::ShortBreak => self.config.short_break_secs,
+            Phase::LongBreak => self.config.long_break_secs,
+        }
+    }
+
     pub fn completed_sessions(&self) -> u32 {
         self.completed_sessions
     }
