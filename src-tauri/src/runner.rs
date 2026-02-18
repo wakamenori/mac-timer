@@ -40,7 +40,7 @@ fn tick_once(app: &AppHandle) {
                         to: "finished".to_string(),
                     },
                 );
-                open_notification_window(app);
+                open_notification_window(app, "timer", "finished");
             }
         }
         ActiveTimer::Pomodoro(timer) => {
@@ -48,14 +48,16 @@ fn tick_once(app: &AppHandle) {
             let snapshot = TimerSnapshot::from_pomodoro(timer);
             let _ = app.emit("timer:tick", &snapshot);
             if let Some(t) = transition {
+                let from = format!("{:?}", t.from);
+                let to = format!("{:?}", t.to);
                 let _ = app.emit(
                     "timer:phase-change",
                     PhaseChangePayload {
-                        from: format!("{:?}", t.from),
-                        to: format!("{:?}", t.to),
+                        from: from.clone(),
+                        to: to.clone(),
                     },
                 );
-                open_notification_window(app);
+                open_notification_window(app, &from, &to);
             }
         }
     }
@@ -64,14 +66,14 @@ fn tick_once(app: &AppHandle) {
     update_tray_title(app);
 }
 
-fn open_notification_window(app: &AppHandle) {
+fn open_notification_window(app: &AppHandle, from: &str, to: &str) {
+    // Close existing notification window so a fresh one opens with the new params
     if let Some(win) = app.get_webview_window("notification") {
-        let _ = win.show();
-        let _ = win.set_focus();
-        return;
+        let _ = win.close();
     }
 
-    let url = tauri::WebviewUrl::App("notification.html".into());
+    let path = format!("notification.html?from={}&to={}", from, to);
+    let url = tauri::WebviewUrl::App(path.into());
     let builder = WebviewWindowBuilder::new(app, "notification", url)
         .title("Notification")
         .inner_size(300.0, 120.0)

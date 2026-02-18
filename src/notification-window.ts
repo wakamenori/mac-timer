@@ -1,4 +1,3 @@
-import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { getNotificationMessage } from "./notification";
 
@@ -45,20 +44,9 @@ style.textContent = `
 document.head.appendChild(style);
 
 const container = document.getElementById("notification")!;
-let autoCloseTimer: ReturnType<typeof setTimeout> | null = null;
 
 function dismiss() {
   getCurrentWindow().close();
-}
-
-function showNotification(title: string, body: string) {
-  container.innerHTML = `
-    <div class="notif-title">${title}</div>
-    <div class="notif-body">${body}</div>
-  `;
-
-  if (autoCloseTimer) clearTimeout(autoCloseTimer);
-  autoCloseTimer = setTimeout(dismiss, AUTO_CLOSE_MS);
 }
 
 // Click anywhere to dismiss
@@ -69,10 +57,19 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") dismiss();
 });
 
-// Listen for phase-change events from the backend
-listen<{ from: string; to: string }>("timer:phase-change", (event) => {
-  const msg = getNotificationMessage(event.payload.from, event.payload.to);
+// Read from/to from URL query params and show immediately
+const params = new URLSearchParams(window.location.search);
+const from = params.get("from");
+const to = params.get("to");
+
+if (from && to) {
+  const msg = getNotificationMessage(from, to);
   if (msg) {
-    showNotification(msg.title, msg.body);
+    container.innerHTML = `
+      <div class="notif-title">${msg.title}</div>
+      <div class="notif-body">${msg.body}</div>
+    `;
   }
-});
+}
+
+setTimeout(dismiss, AUTO_CLOSE_MS);
