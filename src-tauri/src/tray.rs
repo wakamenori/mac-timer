@@ -15,13 +15,19 @@ pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
         .title("⏱ 25:00")
         .tooltip("Timer")
         .menu(&menu)
+        .show_menu_on_left_click(false)
         .on_menu_event(|app, event| {
             if event.id() == "quit" {
                 app.exit(0);
             }
         })
         .on_tray_icon_event(|tray, event| {
-            if let tauri::tray::TrayIconEvent::Click { .. } = event {
+            if let tauri::tray::TrayIconEvent::Click {
+                button: tauri::tray::MouseButton::Left,
+                button_state: tauri::tray::MouseButtonState::Up,
+                ..
+            } = event
+            {
                 toggle_window(tray.app_handle());
             }
         })
