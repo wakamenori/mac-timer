@@ -1,9 +1,10 @@
 use serde::Serialize;
 use std::sync::Mutex;
-use tauri::{Emitter, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 
 use crate::pomodoro::{PomodoroConfig, PomodoroTimer};
 use crate::timer::BasicTimer;
+use crate::tray::update_tray_title;
 
 #[derive(Debug)]
 pub enum ActiveTimer {
@@ -38,6 +39,13 @@ pub struct TimerSnapshot {
 }
 
 impl TimerSnapshot {
+    pub fn from_state(active: &ActiveTimer) -> Self {
+        match active {
+            ActiveTimer::Basic(t) => Self::from_basic(t),
+            ActiveTimer::Pomodoro(t) => Self::from_pomodoro(t),
+        }
+    }
+
     pub fn from_basic(t: &BasicTimer) -> Self {
         Self {
             mode: "basic".to_string(),
@@ -67,52 +75,86 @@ impl TimerSnapshot {
     }
 }
 
+/// Emit snapshot to the window and update tray title immediately.
+/// Must be called AFTER dropping the AppState lock.
+fn emit_and_update_tray(app: &AppHandle, snapshot: TimerSnapshot) {
+    let _ = app.emit("timer:tick", &snapshot);
+    update_tray_title(app);
+}
+
 #[tauri::command]
-pub fn start_timer(state: State<'_, Mutex<AppState>>) {
-    let mut state = state.lock().unwrap();
-    match &mut state.active {
-        ActiveTimer::Basic(t) => t.start(),
-        ActiveTimer::Pomodoro(t) => t.start(),
+pub fn start_timer(app: AppHandle, state: State<'_, Mutex<AppState>>) {
+    let snapshot = {
+        let mut state = state.lock().unwrap();
+        match &mut state.active {
+            ActiveTimer::Basic(t) => t.start(),
+            ActiveTimer::Pomodoro(t) => t.start(),
+        }
+        TimerSnapshot::from_state(&state.active)
+    };
+    emit_and_update_tray(&app, snapshot);
+}
+
+#[tauri::command]
+pub fn pause_timer(app: AppHandle, state: State<'_, Mutex<AppState>>) {
+    let snapshot = {
+        let mut state = state.lock().unwrap();
+        match &mut state.active {
+            ActiveTimer::Basic(t) => t.pause(),
+            ActiveTimer::Pomodoro(t) => t.pause(),
+        }
+        TimerSnapshot::from_state(&state.active)
+    };
+    emit_and_update_tray(&app, snapshot);
+}
+
+#[tauri::command]
+pub fn reset_timer(app: AppHandle, state: State<'_, Mutex<AppState>>) {
+    let snapshot = {
+        let mut state = state.lock().unwrap();
+        match &mut state.active {
+            ActiveTimer::Basic(t) => t.reset(),
+            ActiveTimer::Pomodoro(t) => t.reset(),
+        }
+        TimerSnapshot::from_state(&state.active)
+    };
+    emit_and_update_tray(&app, snapshot);
+}
+
+#[tauri::command]
+pub fn set_duration(app: AppHandle, state: State<'_, Mutex<AppState>>, secs: u32) {
+    let snapshot = {
+        let mut state = state.lock().unwrap();
+        if let ActiveTimer::Basic(t) = &mut state.active {
+            t.set_duration(secs);
+            Some(TimerSnapshot::from_basic(t))
+        } else {
+            None
+        }
+    };
+    if let Some(s) = snapshot {
+        emit_and_update_tray(&app, s);
     }
 }
 
 #[tauri::command]
-pub fn pause_timer(state: State<'_, Mutex<AppState>>) {
-    let mut state = state.lock().unwrap();
-    match &mut state.active {
-        ActiveTimer::Basic(t) => t.pause(),
-        ActiveTimer::Pomodoro(t) => t.pause(),
-    }
+pub fn switch_to_basic(app: AppHandle, state: State<'_, Mutex<AppState>>) {
+    let snapshot = {
+        let mut state = state.lock().unwrap();
+        state.active = ActiveTimer::Basic(BasicTimer::new(25 * 60));
+        TimerSnapshot::from_state(&state.active)
+    };
+    emit_and_update_tray(&app, snapshot);
 }
 
 #[tauri::command]
-pub fn reset_timer(state: State<'_, Mutex<AppState>>) {
-    let mut state = state.lock().unwrap();
-    match &mut state.active {
-        ActiveTimer::Basic(t) => t.reset(),
-        ActiveTimer::Pomodoro(t) => t.reset(),
-    }
-}
-
-#[tauri::command]
-pub fn set_duration(app: tauri::AppHandle, state: State<'_, Mutex<AppState>>, secs: u32) {
-    let mut state = state.lock().unwrap();
-    if let ActiveTimer::Basic(t) = &mut state.active {
-        t.set_duration(secs);
-        let _ = app.emit("timer:tick", &TimerSnapshot::from_basic(t));
-    }
-}
-
-#[tauri::command]
-pub fn switch_to_basic(state: State<'_, Mutex<AppState>>) {
-    let mut state = state.lock().unwrap();
-    state.active = ActiveTimer::Basic(BasicTimer::new(25 * 60));
-}
-
-#[tauri::command]
-pub fn switch_to_pomodoro(state: State<'_, Mutex<AppState>>) {
-    let mut state = state.lock().unwrap();
-    state.active = ActiveTimer::Pomodoro(PomodoroTimer::new(PomodoroConfig::default()));
+pub fn switch_to_pomodoro(app: AppHandle, state: State<'_, Mutex<AppState>>) {
+    let snapshot = {
+        let mut state = state.lock().unwrap();
+        state.active = ActiveTimer::Pomodoro(PomodoroTimer::new(PomodoroConfig::default()));
+        TimerSnapshot::from_state(&state.active)
+    };
+    emit_and_update_tray(&app, snapshot);
 }
 
 #[tauri::command]
