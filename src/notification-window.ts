@@ -62,6 +62,25 @@ const params = new URLSearchParams(window.location.search);
 const from = params.get("from");
 const to = params.get("to");
 
+function playNotificationSound() {
+  const ctx = new AudioContext();
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
+  oscillator.connect(gain);
+  gain.connect(ctx.destination);
+
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(880, ctx.currentTime);
+  oscillator.frequency.setValueAtTime(1047, ctx.currentTime + 0.15);
+  oscillator.frequency.setValueAtTime(1319, ctx.currentTime + 0.3);
+
+  gain.gain.setValueAtTime(0.5, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+
+  oscillator.start(ctx.currentTime);
+  oscillator.stop(ctx.currentTime + 0.6);
+}
+
 if (from && to) {
   const msg = getNotificationMessage(from, to);
   if (msg) {
@@ -69,6 +88,7 @@ if (from && to) {
       <div class="notif-title">${msg.title}</div>
       <div class="notif-body">${msg.body}</div>
     `;
+    playNotificationSound();
   }
 }
 

@@ -19,7 +19,7 @@ pub struct AppState {
 impl Default for AppState {
     fn default() -> Self {
         Self {
-            active: ActiveTimer::Basic(BasicTimer::new(25 * 60)),
+            active: ActiveTimer::Pomodoro(PomodoroTimer::new(PomodoroConfig::default())),
         }
     }
 }
