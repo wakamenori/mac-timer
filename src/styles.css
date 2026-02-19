@@ -7,7 +7,7 @@
 }
 
 :root {
-  --bg-base: rgba(24, 20, 18, 0.92);
+  --bg-base: rgba(24, 20, 18, 0.5);
   --bg-subtle: rgba(250, 245, 240, 0.04);
   --bg-hover: rgba(250, 245, 240, 0.08);
   --bg-active: rgba(250, 245, 240, 0.12);
