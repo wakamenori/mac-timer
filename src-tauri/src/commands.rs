@@ -1,6 +1,6 @@
 use serde::Serialize;
 use std::sync::Mutex;
-use tauri::{Manager, State};
+use tauri::{Emitter, Manager, State};
 
 use crate::pomodoro::{PomodoroConfig, PomodoroTimer};
 use crate::timer::BasicTimer;
@@ -95,10 +95,11 @@ pub fn reset_timer(state: State<'_, Mutex<AppState>>) {
 }
 
 #[tauri::command]
-pub fn set_duration(state: State<'_, Mutex<AppState>>, secs: u32) {
+pub fn set_duration(app: tauri::AppHandle, state: State<'_, Mutex<AppState>>, secs: u32) {
     let mut state = state.lock().unwrap();
     if let ActiveTimer::Basic(t) = &mut state.active {
         t.set_duration(secs);
+        let _ = app.emit("timer:tick", &TimerSnapshot::from_basic(t));
     }
 }
 
