@@ -30,9 +30,9 @@ export function renderPomodoroTimer(
   };
 
   container.innerHTML = `
-    <div class="timer-container">
+    <div class="timer-container" data-tauri-drag-region>
       <button id="btn-close" class="btn-close" aria-label="Close">&times;</button>
-      <div class="mode-label">Pomodoro</div>
+      <div class="mode-label" data-tauri-drag-region>Pomodoro</div>
       <div class="timer-ring-wrapper">
         ${progressRingSvg(snapshot.remaining_secs, snapshot.total_secs)}
         <div class="timer-ring-content">

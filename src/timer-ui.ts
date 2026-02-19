@@ -31,22 +31,28 @@ export interface TimerCallbacks {
   onClose: () => void;
 }
 
-const RING_RADIUS = 70;
+const RING_RADIUS = 72;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 export function progressRingSvg(remaining: number, total: number): string {
   const progress = total > 0 ? remaining / total : 0;
   const offset = RING_CIRCUMFERENCE * (1 - progress);
   return `
-    <svg class="progress-ring" width="160" height="160" viewBox="0 0 160 160">
-      <circle class="progress-ring-bg" cx="80" cy="80" r="${RING_RADIUS}"
-        fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4" />
-      <circle class="progress-ring-fill" cx="80" cy="80" r="${RING_RADIUS}"
-        fill="none" stroke="rgba(59,130,246,0.8)" stroke-width="4"
+    <svg class="progress-ring" width="164" height="164" viewBox="0 0 164 164">
+      <defs>
+        <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#F59E0B" />
+          <stop offset="100%" stop-color="#FB923C" />
+        </linearGradient>
+      </defs>
+      <circle class="progress-ring-bg" cx="82" cy="82" r="${RING_RADIUS}"
+        fill="none" stroke="rgba(250,245,240,0.05)" stroke-width="3" />
+      <circle class="progress-ring-fill" cx="82" cy="82" r="${RING_RADIUS}"
+        fill="none" stroke="url(#ring-gradient)" stroke-width="3"
         stroke-linecap="round"
         stroke-dasharray="${RING_CIRCUMFERENCE}"
         stroke-dashoffset="${offset}"
-        transform="rotate(-90 80 80)" />
+        transform="rotate(-90 82 82)" />
     </svg>`;
 }
 
@@ -77,9 +83,9 @@ export function renderBasicTimer(
   lastBasicIsRunning = snapshot.is_running;
 
   container.innerHTML = `
-    <div class="timer-container">
+    <div class="timer-container" data-tauri-drag-region>
       <button id="btn-close" class="btn-close" aria-label="Close">&times;</button>
-      <div class="mode-label">Basic Timer</div>
+      <div class="mode-label" data-tauri-drag-region>Basic Timer</div>
       <div class="timer-ring-wrapper">
         ${progressRingSvg(snapshot.remaining_secs, snapshot.total_secs)}
         <div class="timer-ring-content">

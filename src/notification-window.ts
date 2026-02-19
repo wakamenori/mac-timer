@@ -5,6 +5,7 @@ const AUTO_CLOSE_MS = 5000;
 
 const style = document.createElement("style");
 style.textContent = `
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
   * {
     margin: 0;
     padding: 0;
@@ -14,7 +15,8 @@ style.textContent = `
     background: transparent;
     overflow: hidden;
     user-select: none;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
   #notification {
     width: 300px;
@@ -24,21 +26,25 @@ style.textContent = `
     align-items: center;
     justify-content: center;
     gap: 8px;
-    background: rgba(30, 30, 30, 0.9);
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
+    background: rgba(24, 20, 18, 0.92);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    backdrop-filter: blur(24px) saturate(1.4);
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #f0f0f0;
+    border: 1px solid rgba(250, 245, 240, 0.07);
+    color: #FAF5F0;
     cursor: pointer;
   }
   .notif-title {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 600;
+    background: linear-gradient(135deg, #F59E0B, #FB923C);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
   .notif-body {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+    font-weight: 400;
+    color: rgba(250, 245, 240, 0.5);
   }
 `;
 document.head.appendChild(style);
