@@ -84,7 +84,6 @@ export function renderBasicTimer(
 
   container.innerHTML = `
     <div class="timer-container" data-tauri-drag-region>
-      <button id="btn-close" class="btn-close" aria-label="Close">&times;</button>
       <div class="mode-label" data-tauri-drag-region>Basic Timer</div>
       <div class="timer-ring-wrapper">
         ${progressRingSvg(snapshot.remaining_secs, snapshot.total_secs)}
@@ -122,10 +121,6 @@ export function renderBasicTimer(
   container
     .querySelector("#btn-switch")
     ?.addEventListener("click", callbacks.onSwitchMode);
-  container
-    .querySelector("#btn-close")
-    ?.addEventListener("click", callbacks.onClose);
-
   container.querySelectorAll(".btn-preset").forEach((btn) => {
     btn.addEventListener("click", () => {
       const secs = parseInt((btn as HTMLElement).dataset.secs || "300", 10);

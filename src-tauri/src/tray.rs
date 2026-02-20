@@ -49,10 +49,7 @@ pub fn toggle_window(app: &AppHandle, tray_rect: Rect) {
     }
 }
 
-fn position_window_below_tray(
-    window: &tauri::WebviewWindow,
-    tray_rect: Rect,
-) {
+fn position_window_below_tray(window: &tauri::WebviewWindow, tray_rect: Rect) {
     let scale = window.scale_factor().unwrap_or(1.0);
     let win_size = match window.outer_size() {
         Ok(s) => s,
