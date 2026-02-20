@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 
 const style = document.createElement("style");
 style.textContent = `
@@ -62,6 +63,18 @@ style.textContent = `
   .overlay-button:active {
     transform: scale(0.97);
   }
+  .overlay-countdown {
+    position: fixed;
+    bottom: 48px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 48px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: rgba(250, 245, 240, 0.3);
+    letter-spacing: 0.05em;
+  }
 `;
 document.head.appendChild(style);
 
@@ -72,7 +85,7 @@ const to = params.get("to");
 
 const isLong = to === "LongBreak";
 const emoji = isLong ? "🎉" : "☕";
-const title = "集中お疲れさまでした！";
+const title = "お疲れさまでした！";
 const body = isLong ? "長めの休憩を取りましょう" : "少し休憩しましょう";
 
 container.innerHTML = `
@@ -80,6 +93,7 @@ container.innerHTML = `
   <div class="overlay-title">${title}</div>
   <div class="overlay-body">${body}</div>
   <button class="overlay-button">休憩を始める</button>
+  <div class="overlay-countdown" id="countdown"></div>
 `;
 
 container.querySelector(".overlay-button")!.addEventListener("click", () => {
@@ -106,3 +120,21 @@ function playNotificationSound() {
 }
 
 playNotificationSound();
+
+interface TimerSnapshot {
+  display: string;
+  remaining_secs: number;
+  phase: string | null;
+}
+
+const countdownEl = document.getElementById("countdown")!;
+
+listen<TimerSnapshot>("timer:tick", (event) => {
+  countdownEl.textContent = event.payload.display;
+});
+
+listen<{ from: string; to: string }>("timer:phase-change", (event) => {
+  if (event.payload.to === "Work") {
+    invoke("dismiss_overlay");
+  }
+});
