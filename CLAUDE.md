@@ -1,3 +1,10 @@
+# Development
+
+```bash
+npm run tauri:dev    # 開発サーバー起動
+npm run tauri:build  # プロダクションビルド
+```
+
 # Static Analysis
 
 Run all of the following after code changes:
