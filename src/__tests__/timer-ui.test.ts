@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDisplay } from "../timer-ui";
+import { formatDisplay, progressRingSvg } from "../timer-ui";
 
 describe("formatDisplay", () => {
   it("formats zero seconds", () => {
@@ -24,5 +24,43 @@ describe("formatDisplay", () => {
 
   it("formats large values", () => {
     expect(formatDisplay(7200)).toBe("2:00:00");
+  });
+});
+
+describe("progressRingSvg", () => {
+  const RING_RADIUS = 72;
+  const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+
+  function extractDashoffset(svg: string): number {
+    const match = svg.match(/stroke-dashoffset="([^"]+)"/);
+    return match ? parseFloat(match[1]) : NaN;
+  }
+
+  it("full ring (remaining == total) has offset close to 0", () => {
+    const svg = progressRingSvg(100, 100);
+    expect(extractDashoffset(svg)).toBeCloseTo(0, 5);
+  });
+
+  it("empty ring (remaining == 0) has offset close to circumference", () => {
+    const svg = progressRingSvg(0, 100);
+    expect(extractDashoffset(svg)).toBeCloseTo(RING_CIRCUMFERENCE, 5);
+  });
+
+  it("half ring (50%) has correct offset", () => {
+    const svg = progressRingSvg(50, 100);
+    expect(extractDashoffset(svg)).toBeCloseTo(RING_CIRCUMFERENCE * 0.5, 5);
+  });
+
+  it("handles total == 0 without division by zero", () => {
+    const svg = progressRingSvg(0, 0);
+    expect(extractDashoffset(svg)).toBeCloseTo(RING_CIRCUMFERENCE, 5);
+  });
+
+  it("contains expected SVG structure", () => {
+    const svg = progressRingSvg(50, 100);
+    expect(svg).toContain("linearGradient");
+    expect(svg).toContain("progress-ring-bg");
+    expect(svg).toContain("progress-ring-fill");
+    expect(svg).toContain(`stroke-dasharray="${RING_CIRCUMFERENCE}"`);
   });
 });
