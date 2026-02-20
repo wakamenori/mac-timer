@@ -22,6 +22,7 @@ pub fn run() {
             commands::get_snapshot,
             commands::toggle_always_on_top,
             commands::dismiss_notification,
+            commands::dismiss_overlay,
         ])
         .setup(|app| {
             // Hide from Dock by setting activation policy to Accessory

@@ -33,6 +33,7 @@ export default defineConfig(async () => ({
       input: {
         main: resolve(__dirname, "index.html"),
         notification: resolve(__dirname, "notification.html"),
+        overlay: resolve(__dirname, "overlay.html"),
       },
     },
   },
