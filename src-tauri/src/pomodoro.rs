@@ -155,11 +155,14 @@ impl PomodoroTimer {
     }
 
     pub fn tray_title(&self) -> String {
-        let icon = match self.phase {
-            Phase::Work => "🍅",
-            Phase::ShortBreak | Phase::LongBreak => "☕",
-        };
-        format!("{icon} {}", self.display())
+        self.display()
+    }
+
+    pub fn tray_icon(&self) -> crate::tray::TrayIcon {
+        match self.phase {
+            Phase::Work => crate::tray::TrayIcon::Tomato,
+            Phase::ShortBreak | Phase::LongBreak => crate::tray::TrayIcon::Coffee,
+        }
     }
 }
 
@@ -288,9 +291,9 @@ mod tests {
     }
 
     #[test]
-    fn tray_title_combines_icon_and_time() {
+    fn tray_title_shows_time() {
         let timer = default_timer();
-        assert_eq!(timer.tray_title(), "🍅 25:00");
+        assert_eq!(timer.tray_title(), "25:00");
     }
 
     #[test]
@@ -300,7 +303,23 @@ mod tests {
         for _ in 0..3 {
             timer.tick();
         }
-        assert_eq!(timer.tray_title(), "☕ 00:01");
+        assert_eq!(timer.tray_title(), "00:01");
+    }
+
+    #[test]
+    fn tray_icon_work_is_tomato() {
+        let timer = default_timer();
+        assert_eq!(timer.tray_icon(), crate::tray::TrayIcon::Tomato);
+    }
+
+    #[test]
+    fn tray_icon_break_is_coffee() {
+        let mut timer = fast_timer();
+        timer.start();
+        for _ in 0..3 {
+            timer.tick();
+        }
+        assert_eq!(timer.tray_icon(), crate::tray::TrayIcon::Coffee);
     }
 
     #[test]

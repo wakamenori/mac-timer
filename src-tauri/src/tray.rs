@@ -1,5 +1,6 @@
 use std::sync::Mutex;
 use tauri::{
+    image::Image,
     menu::{Menu, MenuItem},
     tray::{TrayIconBuilder, TrayIconEvent},
     AppHandle, Manager, PhysicalPosition, Rect,
@@ -7,12 +8,33 @@ use tauri::{
 
 use crate::commands::AppState;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TrayIcon {
+    Timer,
+    Tomato,
+    Coffee,
+}
+
+impl TrayIcon {
+    fn bytes(self) -> &'static [u8] {
+        match self {
+            TrayIcon::Timer => include_bytes!("../icons/tray-timer.png"),
+            TrayIcon::Tomato => include_bytes!("../icons/tray-tomato.png"),
+            TrayIcon::Coffee => include_bytes!("../icons/tray-coffee.png"),
+        }
+    }
+}
+
 pub fn setup_tray(app: &AppHandle) -> tauri::Result<()> {
     let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&quit])?;
 
+    let icon = Image::from_bytes(TrayIcon::Timer.bytes())?;
+
     TrayIconBuilder::with_id("main")
-        .title("⏱ 25:00")
+        .icon(icon)
+        .icon_as_template(true)
+        .title("25:00")
         .tooltip("Timer")
         .menu(&menu)
         .show_menu_on_left_click(false)
@@ -70,15 +92,18 @@ fn position_window_below_tray(window: &tauri::WebviewWindow, tray_rect: Rect) {
 
 pub fn update_tray_title(app: &AppHandle) {
     let state = app.state::<Mutex<AppState>>();
-    let title = {
+    let (title, icon) = {
         let state = state.lock().unwrap();
         match &state.active {
-            crate::commands::ActiveTimer::Basic(t) => format!("⏱ {}", t.display()),
-            crate::commands::ActiveTimer::Pomodoro(t) => t.tray_title(),
+            crate::commands::ActiveTimer::Basic(t) => (t.display(), TrayIcon::Timer),
+            crate::commands::ActiveTimer::Pomodoro(t) => (t.display(), t.tray_icon()),
         }
     };
 
     if let Some(tray) = app.tray_by_id("main") {
         let _ = tray.set_title(Some(&title));
+        if let Ok(img) = Image::from_bytes(icon.bytes()) {
+            let _ = tray.set_icon(Some(img));
+        }
     }
 }

@@ -56,7 +56,7 @@ impl TimerSnapshot {
             is_finished: t.is_finished(),
             phase: None,
             session_display: None,
-            tray_title: format!("⏱ {}", t.display()),
+            tray_title: t.display(),
         }
     }
 
@@ -231,7 +231,7 @@ mod tests {
         assert_eq!(snap.display, "05:00");
         assert_eq!(snap.remaining_secs, 300);
         assert_eq!(snap.total_secs, 300);
-        assert_eq!(snap.tray_title, "⏱ 05:00");
+        assert_eq!(snap.tray_title, "05:00");
         assert!(snap.phase.is_none());
         assert!(snap.session_display.is_none());
     }
@@ -247,7 +247,7 @@ mod tests {
         assert_eq!(snap.total_secs, 25 * 60);
         assert_eq!(snap.phase, Some("Work".to_string()));
         assert_eq!(snap.session_display, Some("○ ○ ○ ○".to_string()));
-        assert!(snap.tray_title.contains("🍅"));
+        assert_eq!(snap.tray_title, "25:00");
     }
 
     #[test]
