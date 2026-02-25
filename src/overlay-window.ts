@@ -1,9 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 const style = document.createElement("style");
 style.textContent = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
   * {
     margin: 0;
     padding: 0;
@@ -119,7 +119,21 @@ function playNotificationSound() {
   oscillator.stop(ctx.currentTime + 0.6);
 }
 
-playNotificationSound();
+function safePlayNotificationSound() {
+  try {
+    playNotificationSound();
+  } catch (err) {
+    console.error("Failed to play overlay sound:", err);
+  }
+}
+
+safePlayNotificationSound();
+
+// Hidden window + requestAnimationFrame can stall on some platforms.
+// Use a macrotask to show reliably after the current script turn.
+setTimeout(() => {
+  void getCurrentWindow().show();
+}, 0);
 
 interface TimerSnapshot {
   display: string;

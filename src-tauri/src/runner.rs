@@ -126,10 +126,18 @@ fn open_overlay_windows(app: &AppHandle, to: &str) {
             .title("Break Overlay")
             .position(logical_x, logical_y)
             .inner_size(logical_width, logical_height)
+            .background_color(tauri::utils::config::Color(10, 8, 6, 255))
+            .initialization_script(
+                "document.documentElement.style.background = '#0a0806';\
+                 document.documentElement.style.margin = '0';\
+                 document.documentElement.style.overflow = 'hidden';",
+            )
             .decorations(false)
+            .transparent(true)
             .always_on_top(true)
             .skip_taskbar(true)
-            .resizable(false);
+            .resizable(false)
+            .visible(false);
 
         match builder.build() {
             Ok(_) => {}
