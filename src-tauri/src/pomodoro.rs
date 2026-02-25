@@ -26,7 +26,7 @@ impl Default for PomodoroConfig {
         Self {
             work_secs: 25 * 60,
             short_break_secs: 5 * 60,
-            long_break_secs: 15 * 60,
+            long_break_secs: 20 * 60,
             sessions_before_long_break: 4,
         }
     }
