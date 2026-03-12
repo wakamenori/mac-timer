@@ -96,7 +96,7 @@ fn open_notification_window(app: &AppHandle, from: &str, to: &str) {
     }
 }
 
-fn open_overlay_windows(app: &AppHandle, to: &str) {
+pub fn open_overlay_windows(app: &AppHandle, to: &str) {
     // Close any existing overlay windows first
     close_overlay_windows(app);
 
