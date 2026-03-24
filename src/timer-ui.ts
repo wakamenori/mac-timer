@@ -16,6 +16,7 @@ export interface TimerSnapshot {
   remaining_secs: number;
   total_secs: number;
   is_running: boolean;
+  is_idle: boolean;
   is_finished: boolean;
   phase: string | null;
   session_display: string | null;
@@ -27,6 +28,7 @@ export interface TimerCallbacks {
   onPause: () => void;
   onReset: () => void;
   onSetDuration: (secs: number) => void;
+  onAdjustDuration: (deltaSecs: number) => void;
   onSwitchMode: () => void;
   onClose: () => void;
 }

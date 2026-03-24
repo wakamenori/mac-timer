@@ -145,6 +145,23 @@ body {
   color: var(--text-primary);
 }
 
+/* ── Duration Adjust (+/- buttons) ── */
+
+.duration-adjust {
+  display: flex;
+  gap: 8px;
+  height: 28px;
+  align-items: center;
+}
+
+.btn-adjust {
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-mono);
+  letter-spacing: 0.3px;
+}
+
 /* ── Session Dots ── */
 
 .session-dots {
@@ -152,6 +169,9 @@ body {
   letter-spacing: 6px;
   color: var(--accent);
   opacity: 0.7;
+  height: 28px;
+  display: flex;
+  align-items: center;
 }
 
 /* ── Buttons ── */

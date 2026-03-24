@@ -19,6 +19,8 @@ const callbacks = {
   onPause: () => invoke("pause_timer"),
   onReset: () => invoke("reset_timer"),
   onSetDuration: (secs: number) => invoke("set_duration", { secs }),
+  onAdjustDuration: (deltaSecs: number) =>
+    invoke("adjust_pomodoro_work_duration", { deltaSecs }),
   onSwitchMode: async () => {
     const current = (await invoke("get_snapshot")) as TimerSnapshot;
     if (current.mode === "basic") {

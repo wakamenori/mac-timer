@@ -83,6 +83,19 @@ impl PomodoroTimer {
         self.status
     }
 
+    /// Adjust remaining seconds for the current Work phase while Idle.
+    /// `delta` is in seconds (positive = add time, negative = subtract time).
+    /// Clamps between 60 seconds and work_secs.
+    pub fn adjust_remaining(&mut self, delta: i32) -> bool {
+        if self.status != PomodoroStatus::Idle || self.phase != Phase::Work {
+            return false;
+        }
+        let new_val = (self.remaining_secs as i64 + delta as i64)
+            .clamp(60, self.config.work_secs as i64) as u32;
+        self.remaining_secs = new_val;
+        true
+    }
+
     pub fn start(&mut self) {
         self.status = PomodoroStatus::Running;
     }

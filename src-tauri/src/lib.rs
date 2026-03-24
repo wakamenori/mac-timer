@@ -17,6 +17,7 @@ pub fn run() {
             commands::pause_timer,
             commands::reset_timer,
             commands::set_duration,
+            commands::adjust_pomodoro_work_duration,
             commands::switch_to_basic,
             commands::switch_to_pomodoro,
             commands::get_snapshot,

@@ -1,21 +1,29 @@
 import type { TimerCallbacks, TimerSnapshot } from "./timer-ui";
 import { updateProgressRing, progressRingSvg } from "./timer-ui";
 
-let lastPomodoroState: { isRunning: boolean; phase: string | null } | null =
-  null;
+let lastPomodoroState: {
+  isRunning: boolean;
+  isIdle: boolean;
+  phase: string | null;
+  remainingSecs: number;
+} | null = null;
 
 export function renderPomodoroTimer(
   container: HTMLElement,
   snapshot: TimerSnapshot,
   callbacks: TimerCallbacks,
 ): void {
+  const showAdjust = snapshot.is_idle && snapshot.phase === "Work";
+
   // If already mounted and state hasn't changed, just update text
   const existing = container.querySelector(".timer-display");
   if (
     existing &&
     lastPomodoroState &&
     lastPomodoroState.isRunning === snapshot.is_running &&
-    lastPomodoroState.phase === snapshot.phase
+    lastPomodoroState.isIdle === snapshot.is_idle &&
+    lastPomodoroState.phase === snapshot.phase &&
+    lastPomodoroState.remainingSecs === snapshot.remaining_secs
   ) {
     existing.textContent = snapshot.display;
     updateProgressRing(container, snapshot.remaining_secs, snapshot.total_secs);
@@ -26,7 +34,9 @@ export function renderPomodoroTimer(
 
   lastPomodoroState = {
     isRunning: snapshot.is_running,
+    isIdle: snapshot.is_idle,
     phase: snapshot.phase,
+    remainingSecs: snapshot.remaining_secs,
   };
 
   container.innerHTML = `
@@ -38,7 +48,14 @@ export function renderPomodoroTimer(
           <div class="timer-display">${snapshot.display}</div>
         </div>
       </div>
-      <div class="session-dots">${snapshot.session_display || ""}</div>
+      ${
+        showAdjust
+          ? `<div class="duration-adjust">
+              <button id="btn-minus" class="btn btn-adjust">−5m</button>
+              <button id="btn-plus" class="btn btn-adjust">+5m</button>
+            </div>`
+          : `<div class="session-dots">${snapshot.session_display || ""}</div>`
+      }
       <div class="timer-controls">
         ${
           snapshot.is_running
@@ -60,6 +77,12 @@ export function renderPomodoroTimer(
   container
     .querySelector("#btn-reset")
     ?.addEventListener("click", callbacks.onReset);
+  container
+    .querySelector("#btn-minus")
+    ?.addEventListener("click", () => callbacks.onAdjustDuration(-5 * 60));
+  container
+    .querySelector("#btn-plus")
+    ?.addEventListener("click", () => callbacks.onAdjustDuration(5 * 60));
   container
     .querySelector("#btn-switch")
     ?.addEventListener("click", callbacks.onSwitchMode);

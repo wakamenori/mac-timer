@@ -10,6 +10,7 @@ function makeSnapshot(overrides: Partial<TimerSnapshot> = {}): TimerSnapshot {
     remaining_secs: 1500,
     total_secs: 1500,
     is_running: false,
+    is_idle: true,
     is_finished: false,
     phase: "Work",
     session_display: "○ ○ ○ ○",
@@ -24,6 +25,7 @@ function makeCallbacks(): TimerCallbacks {
     onPause: vi.fn(),
     onReset: vi.fn(),
     onSetDuration: vi.fn(),
+    onAdjustDuration: vi.fn(),
     onSwitchMode: vi.fn(),
     onClose: vi.fn(),
   };

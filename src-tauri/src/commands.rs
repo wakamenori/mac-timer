@@ -32,6 +32,7 @@ pub struct TimerSnapshot {
     pub remaining_secs: u32,
     pub total_secs: u32,
     pub is_running: bool,
+    pub is_idle: bool,
     pub is_finished: bool,
     pub phase: Option<String>,
     pub session_display: Option<String>,
@@ -53,6 +54,7 @@ impl TimerSnapshot {
             remaining_secs: t.remaining_secs(),
             total_secs: t.duration_secs(),
             is_running: t.status() == crate::timer::TimerStatus::Running,
+            is_idle: t.status() == crate::timer::TimerStatus::Idle,
             is_finished: t.is_finished(),
             phase: None,
             session_display: None,
@@ -67,6 +69,7 @@ impl TimerSnapshot {
             remaining_secs: t.remaining_secs(),
             total_secs: t.phase_duration_secs(),
             is_running: t.status() == crate::pomodoro::PomodoroStatus::Running,
+            is_idle: t.status() == crate::pomodoro::PomodoroStatus::Idle,
             is_finished: false,
             phase: Some(format!("{:?}", t.phase())),
             session_display: Some(t.session_display()),
@@ -108,6 +111,18 @@ pub(crate) fn do_set_duration(state: &mut AppState, secs: u32) -> Option<TimerSn
     } else {
         None
     }
+}
+
+pub(crate) fn do_adjust_pomodoro_work_duration(
+    state: &mut AppState,
+    delta_secs: i32,
+) -> Option<TimerSnapshot> {
+    if let ActiveTimer::Pomodoro(t) = &mut state.active {
+        if t.adjust_remaining(delta_secs) {
+            return Some(TimerSnapshot::from_pomodoro(t));
+        }
+    }
+    None
 }
 
 pub(crate) fn do_switch_to_basic(state: &mut AppState) -> TimerSnapshot {
@@ -165,6 +180,21 @@ pub fn set_duration(app: AppHandle, state: State<'_, Mutex<AppState>>, secs: u32
     let snapshot = {
         let mut s = state.lock().unwrap();
         do_set_duration(&mut s, secs)
+    };
+    if let Some(s) = snapshot {
+        emit_and_update_tray(&app, s);
+    }
+}
+
+#[tauri::command]
+pub fn adjust_pomodoro_work_duration(
+    app: AppHandle,
+    state: State<'_, Mutex<AppState>>,
+    delta_secs: i32,
+) {
+    let snapshot = {
+        let mut s = state.lock().unwrap();
+        do_adjust_pomodoro_work_duration(&mut s, delta_secs)
     };
     if let Some(s) = snapshot {
         emit_and_update_tray(&app, s);
